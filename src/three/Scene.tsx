@@ -1,9 +1,14 @@
-import {  useEffect } from "react";
+import {useEffect, useRef} from "react";
 import * as THREE from "three";
+import CANNON from 'cannon'
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-expect-error
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
-import Floor from "./Floor.tsx";
-import Sphere from "./Sphere.tsx";
 import gradienTexture3 from "../assets/textures/gradients/3.jpg";
+
+import Floor from "./Floor.tsx";
+import Sphere, {IForwardedRef} from "./Sphere.tsx";
+
 import useSize from "../hooks/useSize.ts";
 
 
@@ -23,11 +28,12 @@ const renderer = new THREE.WebGLRenderer();
 renderer.shadowMap.enabled = true;
 renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 renderer.setClearAlpha(0);
-//renderer.setClearColor("#778899");
+
 // Base camera
 document.body.appendChild(renderer.domElement);
 const groupCamera = new THREE.Group();
 scene.add(groupCamera);
+
 const camera = new THREE.PerspectiveCamera(
   75,
   window.innerWidth / window.innerHeight,
@@ -38,6 +44,19 @@ const camera = new THREE.PerspectiveCamera(
 camera.position.z = 5;
 groupCamera.add(camera);
 
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true;
+
+
+/**
+ * Physics
+ */
+const world = new CANNON.World()
+world.gravity.set(0,  -9.82, 0)
+
+/**
+ * parameters
+ */
 const parameters: IInitialParameters = {
   materialColor: "#445567",
   objectDistance: 5,
@@ -54,12 +73,12 @@ gradienTexture.magFilter = THREE.NearestFilter;
 
 parameters.texture = gradienTexture;
 
+
+
+
 function Scene() {
   const {innerWidth, innerHeight, devicePixelRatio} = useSize()
-
-  const controls = new OrbitControls(camera, renderer.domElement);
-  controls.enableDamping = true;
-
+  const sphereRef = useRef<IForwardedRef>();
 
   useEffect(() => {
     // Update camera
@@ -73,8 +92,22 @@ function Scene() {
 
 
 
-  const tick = () => {
 
+  const clock = new THREE.Clock()
+  let oldElapsedTime = 0
+  const tick = () => {
+    const elapsedTime = clock.getElapsedTime()
+    const deltaTime = elapsedTime - oldElapsedTime
+    oldElapsedTime = elapsedTime
+
+    // Update physics
+    world.step(1 / 60, deltaTime, 3)
+
+    // Update controls
+    if (sphereRef.current) {
+      sphereRef.current.updatePosition(); // Accede a un método en el componente hijo
+    }
+    controls.update()
 
 
     renderer.render(scene, camera);
@@ -90,10 +123,12 @@ function Scene() {
       <Floor
         initialParameters={parameters}
         scene={scene}
+        world={world}
       />
-      <Sphere
+      <Sphere ref={sphereRef}
         initialParameters={parameters}
         scene={scene}
+        world={world}
       />
 
     </>

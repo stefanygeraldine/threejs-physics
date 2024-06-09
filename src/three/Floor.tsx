@@ -1,15 +1,18 @@
 import { useEffect } from "react";
 import * as THREE from "three";
 import { type IInitialParameters } from "./Scene.tsx";
+import CANNON from 'cannon'
+import {IBody} from "../types.ts";
 
 interface IProps {
   scene: THREE.Scene;
+  world: CANNON.World
   initialParameters: IInitialParameters;
 }
 
 
 function Floor(props: IProps) {
-  const { scene } = props;
+  const { scene, world } = props;
 
 
   let mesh: THREE.Mesh;
@@ -20,10 +23,23 @@ function Floor(props: IProps) {
     mesh = new THREE.Mesh(geometry, material);
     mesh.rotation.x = Math.PI / 1.5;
     scene.add(mesh);
+
+
   };
+
+  const generatePhysics = (): void => {
+    const floorShape = new CANNON.Plane()
+    const floorBody: IBody  = new CANNON.Body()
+    floorBody.mass = 0
+    floorBody.customType = 'plane'
+    floorBody.addShape(floorShape)
+    world.addBody(floorBody)
+
+  }
 
   useEffect(() => {
     generateGeometry();
+    generatePhysics();
   }, []);
 
   return <></>;
