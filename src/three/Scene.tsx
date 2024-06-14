@@ -1,5 +1,6 @@
 import { createRef, Fragment, useCallback, useEffect, useRef } from "react";
 import * as THREE from "three";
+import * as dat from "dat.gui";
 import CANNON from "cannon";
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-expect-error
@@ -31,7 +32,9 @@ const camera = new THREE.PerspectiveCamera(
   100,
 );
 
-camera.position.z = 5;
+camera.position.x = 0;
+camera.position.y = 2;
+camera.position.z = 8;
 groupCamera.add(camera);
 
 const controls = new OrbitControls(camera, renderer.domElement);
@@ -63,6 +66,7 @@ gradienTexture.magFilter = THREE.NearestFilter;
 function Scene() {
   const { innerWidth, innerHeight, devicePixelRatio } = useSize();
   const sphereGroupRef = useRef(null);
+  const floorRef = useRef(null);
 
   const addSphere = useCallback(() => {
     if (sphereGroupRef.current) {
@@ -86,12 +90,28 @@ function Scene() {
     if (sphereGroupRef.current) {
       sphereGroupRef.current.updatePosition();
     }
+
+    // Update position
+    if (floorRef.current) {
+      const speed = 0.5;
+      const halfRotation = Math.PI / 8; // Half rotation in radians (90 degrees)
+      const sineValue = Math.sin(elapsedTime * speed) * halfRotation;
+      floorRef.current.rotationAnimate(sineValue); // Accede a un método en el componente hijo
+    }
+
     // Update controls
     controls.update();
 
     renderer.render(scene, camera);
     requestAnimationFrame(tick);
   };
+  /*
+  const gui = new dat.GUI();
+  const cameraFolder = gui.addFolder("Camera");
+  cameraFolder.add(camera.position, "x", -10, 10);
+  cameraFolder.add(camera.position, "y", -10, 10);
+  cameraFolder.add(camera.position, "z", 0, 20);
+ */
 
   useEffect(() => {
     tick();
@@ -102,11 +122,6 @@ function Scene() {
     camera.aspect = innerWidth / innerHeight;
     camera.updateProjectionMatrix();
 
-    // Update position
-    if (sphereGroupRef.current) {
-      sphereGroupRef.current.updatePosition(); // Accede a un método en el componente hijo
-    }
-
     // Update renderer
     renderer.setSize(innerWidth, innerHeight);
     renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
@@ -114,7 +129,12 @@ function Scene() {
 
   return (
     <>
-      <Floor scene={scene} world={world} material={defaultMaterial} />
+      <Floor
+        ref={floorRef}
+        scene={scene}
+        world={world}
+        material={defaultMaterial}
+      />
       <SphereGroup
         material={defaultMaterial}
         ref={sphereGroupRef}

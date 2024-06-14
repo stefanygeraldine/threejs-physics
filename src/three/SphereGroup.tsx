@@ -1,18 +1,13 @@
 import {
   forwardRef,
-  useEffect,
   useImperativeHandle,
-  memo,
-  useState,
   useCallback,
   createRef,
   useRef,
 } from "react";
 import * as THREE from "three";
 import CANNON from "cannon";
-import { IObjectProps, ISphereParameters } from "../types.ts";
-import Sphere from "./Sphere.tsx";
-import sphere from "./Sphere.tsx";
+import { IObjectProps } from "../types.ts";
 
 const SphereGropup = forwardRef((props: IObjectProps, ref) => {
   const { scene, world, material } = props;
@@ -25,7 +20,7 @@ const SphereGropup = forwardRef((props: IObjectProps, ref) => {
   const generateGeometry = ({ position, radius, mass }): void => {
     // Create a sphere
     const sphereGeometry = new THREE.SphereGeometry(radius, 32, 32);
-    const sphereMaterial = new THREE.MeshBasicMaterial({ color: 0xff0000 });
+    const sphereMaterial = new THREE.MeshBasicMaterial({ color: 0xf289ff });
     sphere = new THREE.Mesh(sphereGeometry, sphereMaterial);
     sphere.position.x = position.x;
     sphere.position.y = position.y;
