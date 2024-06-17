@@ -56,8 +56,11 @@ const Floor = forwardRef((props: IObjectProps, ref) => {
   };
 
   const rotationAnimate = (sineValue) => {
-    mesh.rotation.z = sineValue;
-    lines.rotation.z = sineValue;
+    console.log(mesh);
+    if (mesh && lines) {
+      mesh.rotation.z = sineValue;
+      lines.rotation.z = sineValue;
+    }
   };
 
   useImperativeHandle(ref, () => ({

@@ -8,6 +8,7 @@ import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 import gradienTexture3 from "../assets/textures/gradients/3.jpg";
 
 import Floor from "./Floor.tsx";
+import FloorGroup from "./FloorGroup.tsx";
 import SphereGroup from "./SphereGroup.tsx";
 
 import useSize from "../hooks/useSize.ts";
@@ -67,6 +68,7 @@ function Scene() {
   const { innerWidth, innerHeight, devicePixelRatio } = useSize();
   const sphereGroupRef = useRef(null);
   const floorRef = useRef(null);
+  const floorGroupRef = useRef(null);
 
   const addSphere = useCallback(() => {
     if (sphereGroupRef.current) {
@@ -131,6 +133,12 @@ function Scene() {
     <>
       <Floor
         ref={floorRef}
+        scene={scene}
+        world={world}
+        material={defaultMaterial}
+      />
+      <FloorGroup
+        ref={floorGroupRef}
         scene={scene}
         world={world}
         material={defaultMaterial}
